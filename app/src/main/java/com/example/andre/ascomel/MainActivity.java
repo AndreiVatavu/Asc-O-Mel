@@ -6,7 +6,13 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements BottomNavigationView.OnNavigationItemSelectedListener {
@@ -52,5 +58,37 @@ public class MainActivity extends AppCompatActivity
         }
 
         return loadFragment(fragment);
+    }
+
+    List<String> countries = new ArrayList<>();
+    ListView simpleList;
+    ArrayAdapter<String> adapter;
+
+    public void searchByPattern(View view) {
+        simpleList = findViewById(R.id.searc_list);
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        countries.add("Romania");
+        adapter = new ArrayAdapter<>(this, R.layout.activity_listview, R.id.textView, countries);
+        simpleList.setAdapter(adapter);
     }
 }
