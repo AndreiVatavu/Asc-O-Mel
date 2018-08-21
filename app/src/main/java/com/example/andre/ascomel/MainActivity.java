@@ -1,6 +1,7 @@
 package com.example.andre.ascomel;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -9,13 +10,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements BottomNavigationView.OnNavigationItemSelectedListener {
+
+    private GoogleAccount googleAccount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +29,29 @@ public class MainActivity extends AppCompatActivity
         navigation.setOnNavigationItemSelectedListener(this);
 
         loadFragment(new HomeFragment());
+
+        googleAccount = GoogleAccount.getGoogleAccount();
+    }
+
+    boolean doubleBackToExitPressedOnce = false;
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
     }
 
     private boolean loadFragment(Fragment fragment) {
@@ -60,35 +86,13 @@ public class MainActivity extends AppCompatActivity
         return loadFragment(fragment);
     }
 
-    List<String> countries = new ArrayList<>();
+    List<String> searchList = new ArrayList<>();
     ListView simpleList;
     ArrayAdapter<String> adapter;
 
     public void searchByPattern(View view) {
         simpleList = findViewById(R.id.searc_list);
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        countries.add("Romania");
-        adapter = new ArrayAdapter<>(this, R.layout.activity_listview, R.id.textView, countries);
+        adapter = new ArrayAdapter<>(this, R.layout.activity_listview, R.id.textView, searchList);
         simpleList.setAdapter(adapter);
     }
 }
