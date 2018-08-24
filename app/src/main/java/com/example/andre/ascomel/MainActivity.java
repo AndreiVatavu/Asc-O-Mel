@@ -10,6 +10,7 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity
      * An asynchronous task that handles the YouTube Data API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
-    private class MakeRequestTask extends AsyncTask<String, Void, List<String>> {
+    private class MakeRequestTask extends AsyncTask<String, Void, SearchListAdapter> {
         private com.google.api.services.youtube.YouTube mService = null;
         private Exception mLastError = null;
 
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity
          * @param pattern search pattern
          */
         @Override
-        protected List<String> doInBackground(String... pattern) {
+        protected SearchListAdapter doInBackground(String... pattern) {
             try {
                 return getDataFromApi(pattern[0]);
             } catch (Exception e) {
@@ -169,11 +170,11 @@ public class MainActivity extends AppCompatActivity
         /**
          * Fetch information about the "GoogleDevelopers" YouTube channel.
          *
-         * @return List of Strings containing information about the channel.
+         * @return List of Strings containing information about search.
          * @throws IOException
          */
-        private List<String> getDataFromApi(String pattern) throws IOException {
-            List<String> result = new ArrayList<>();
+        private SearchListAdapter getDataFromApi(String pattern) throws IOException {
+            List<Pair<String, String>> result = new ArrayList<>();
             try {
                 HashMap<String, String> parameters = new HashMap<>();
                 parameters.put("part", "snippet");
@@ -181,24 +182,25 @@ public class MainActivity extends AppCompatActivity
                 parameters.put("q", pattern);
                 parameters.put("type", "");
 
-                YouTube.Search.List searchListByKeywordRequest = mService.search().list(parameters.get("part").toString());
+                YouTube.Search.List searchListByKeywordRequest = mService.search().list(parameters.get("part"));
                 if (parameters.containsKey("maxResults")) {
-                    searchListByKeywordRequest.setMaxResults(Long.parseLong(parameters.get("maxResults").toString()));
+                    searchListByKeywordRequest.setMaxResults(Long.parseLong(parameters.get("maxResults")));
                 }
 
-                if (parameters.containsKey("q") && parameters.get("q") != "") {
-                    searchListByKeywordRequest.setQ(parameters.get("q").toString());
+                if (parameters.containsKey("q") && !parameters.get("q").equals("")) {
+                    searchListByKeywordRequest.setQ(parameters.get("q"));
                 }
 
-                if (parameters.containsKey("type") && parameters.get("type") != "") {
-                    searchListByKeywordRequest.setType(parameters.get("type").toString());
+                if (parameters.containsKey("type") && !parameters.get("type").equals("")) {
+                    searchListByKeywordRequest.setType(parameters.get("type"));
                 }
 
                 SearchListResponse response = searchListByKeywordRequest.execute();
                 for (SearchResult item : response.getItems()) {
                     String videoId = item.getId().getVideoId();
+                    String imageUrl = item.getSnippet().getThumbnails().getDefault().getUrl();
                     if (videoId != null) {
-                        result.add(videoId);
+                        result.add(new Pair<>(videoId, imageUrl));
                     }
                 }
             } catch (GoogleJsonResponseException e) {
@@ -207,7 +209,20 @@ public class MainActivity extends AppCompatActivity
             } catch (Throwable t) {
                 t.printStackTrace();
             }
-            return result;
+
+            SearchListAdapter adapter = null;
+
+            if (result == null || result.size() == 0) {
+//                mOutputText.setText("No results returned.");
+            } else {
+//                searchList = output;
+                simpleList = findViewById(R.id.searc_list);
+//                adapter = new ArrayAdapter<>(MainActivity.this, R.layout.activity_listview, R.id.textView, output);
+                adapter = new SearchListAdapter(getApplicationContext(), result);
+//                output.add(0, "Data retrieved using the YouTube Data API:");
+//                mOutputText.setText(TextUtils.join("\n", output));
+            }
+            return adapter;
         }
 
 
@@ -218,19 +233,10 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(List<String> output) {
+        protected void onPostExecute(SearchListAdapter adapter) {
             mProgress.hide();
-            if (output == null || output.size() == 0) {
-//                mOutputText.setText("No results returned.");
-            } else {
-                searchList = output;
-                simpleList = findViewById(R.id.searc_list);
-                adapter = new ArrayAdapter<>(MainActivity.this, R.layout.activity_listview, R.id.textView, output);
-                simpleList.setAdapter(adapter);
-                simpleList.setOnItemClickListener(new ItemList());
-//                output.add(0, "Data retrieved using the YouTube Data API:");
-//                mOutputText.setText(TextUtils.join("\n", output));
-            }
+            simpleList.setAdapter(adapter);
+            simpleList.setOnItemClickListener(new ItemList());
         }
 
         @Override
@@ -254,8 +260,7 @@ public class MainActivity extends AppCompatActivity
     class ItemList implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            TextView textView = view.findViewById(R.id.textView);
-//            Toast.makeText(MainActivity.this, textView.getText().toString(), Toast.LENGTH_SHORT).show();
+            TextView textView = view.findViewById(R.id.video_name);
             String searchPattern = textView.getText().toString();
             Intent intent = new Intent(MainActivity.this, MediaActivity.class);
             intent.putExtra("searchPattern", searchPattern);
