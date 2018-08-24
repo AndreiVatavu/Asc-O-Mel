@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity
 
     private GoogleAccount googleAccount;
     private ProgressDialog mProgress;
+    private List<SearchResult> responseItems = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,11 +197,13 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 SearchListResponse response = searchListByKeywordRequest.execute();
+                responseItems = new ArrayList<>();
                 for (SearchResult item : response.getItems()) {
-                    String videoId = item.getId().getVideoId();
+                    String title = item.getSnippet().getTitle();
                     String imageUrl = item.getSnippet().getThumbnails().getDefault().getUrl();
-                    if (videoId != null) {
-                        result.add(new Pair<>(videoId, imageUrl));
+                    if (title != null) {
+                        result.add(new Pair<>(title, imageUrl));
+                        responseItems.add(item);
                     }
                 }
             } catch (GoogleJsonResponseException e) {
@@ -261,9 +264,8 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             TextView textView = view.findViewById(R.id.video_name);
-            String searchPattern = textView.getText().toString();
             Intent intent = new Intent(MainActivity.this, MediaActivity.class);
-            intent.putExtra("searchPattern", searchPattern);
+            intent.putExtra("searchPattern", responseItems.get(position).getId().getVideoId());
             startActivity(intent);
         }
     }
