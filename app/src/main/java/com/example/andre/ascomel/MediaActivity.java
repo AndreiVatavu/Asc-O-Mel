@@ -17,6 +17,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MediaActivity extends AppCompatActivity {
 
@@ -78,7 +80,7 @@ public class MediaActivity extends AppCompatActivity {
                     }
                 }
 
-            } catch(IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 

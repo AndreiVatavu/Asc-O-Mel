@@ -10,15 +10,19 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -33,10 +37,14 @@ import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
 
+import org.jsoup.Jsoup;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity
         implements BottomNavigationView.OnNavigationItemSelectedListener {
@@ -76,7 +84,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void run() {
-                doubleBackToExitPressedOnce=false;
+                doubleBackToExitPressedOnce = false;
             }
         }, 2000);
     }
@@ -110,7 +118,9 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
 
-        return loadFragment(fragment);
+        loadFragment(fragment);
+
+        return true;
     }
 
     List<String> searchList = new ArrayList<>();
@@ -118,7 +128,7 @@ public class MainActivity extends AppCompatActivity
     ArrayAdapter<String> adapter;
 
     public void searchByPattern(View view) {
-        EditText editText = (EditText) findViewById(R.id.searh_box);
+        AutoCompleteTextView editText = (AutoCompleteTextView) findViewById(R.id.searh_box);
         String searchPattern = editText.getText().toString();
         new MakeRequestTask(googleAccount.getmCredential()).execute(searchPattern);
     }
@@ -142,6 +152,7 @@ public class MainActivity extends AppCompatActivity
 
         /**
          * Background task to call YouTube Data API.
+         *
          * @param pattern search pattern
          */
         @Override
@@ -157,6 +168,7 @@ public class MainActivity extends AppCompatActivity
 
         /**
          * Fetch information about the "GoogleDevelopers" YouTube channel.
+         *
          * @return List of Strings containing information about the channel.
          * @throws IOException
          */
