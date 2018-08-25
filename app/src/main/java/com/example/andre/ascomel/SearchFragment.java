@@ -26,8 +26,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +37,10 @@ public class SearchFragment extends Fragment {
 
     private FragmentActivity activity;
     private AutoCompleteTextView textView2;
-    PageScraper scraper = null;
+    private PageScraper scraper = null;
+    private ArrayAdapter<String> adapter2;
+    private List<String> searchSuggestions = null;
+    private Set<String> stringSet = null;
 
     @Nullable
     @Override
@@ -49,6 +54,10 @@ public class SearchFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         activity = getActivity();
         textView2 = (AutoCompleteTextView) activity.findViewById(R.id.searh_box);
+        searchSuggestions = new ArrayList<>();
+        stringSet = new HashSet<>();
+        adapter2 = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, searchSuggestions);
+        textView2.setAdapter(adapter2);
 
         final String baseURL = "http://suggestqueries.google.com/complete/search?";
 
@@ -60,12 +69,11 @@ public class SearchFragment extends Fragment {
         parameters.put("ds", "yt");
 
         final String baseURL2 = makeRequestURL(baseURL, parameters);
-
         textView2.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
                 if (scraper != null) {
-                    scraper.cancel(true);
-                    textView2.clearListSelection();
+//                    scraper.cancel(true);
+//                    textView2.clearListSelection();
                 }
                 if (!s.toString().isEmpty()) {
                     String querry = "&q=" + s.toString();
@@ -129,12 +137,14 @@ public class SearchFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(List<String> searchSuggestions) {
-            if (searchSuggestions == null) {
+        protected void onPostExecute(List<String> newSearchSuggestions) {
+            if (newSearchSuggestions == null) {
                 return;
             }
-            ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(activity, android.R.layout.simple_list_item_1, searchSuggestions);
-            textView2.setAdapter(adapter2);
+            searchSuggestions.addAll(newSearchSuggestions);
+            adapter2.clear();
+            adapter2.addAll(newSearchSuggestions);
+            adapter2.notifyDataSetChanged();
 //            String[] countries = {"Romania", "Romania", "Romania", "Romania", "Romania"};
 //            ArrayAdapter<String> adapter22 = new ArrayAdapter<String>(activity, android.R.layout.simple_list_item_1, countries);
 //            textView2.setAdapter(adapter22);
