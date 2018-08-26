@@ -1,16 +1,13 @@
 package com.example.andre.ascomel;
 
-import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,22 +18,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.jsoup.Jsoup;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SearchFragment extends Fragment {
 
-    private FragmentActivity activity;
-    private AutoCompleteTextView textView2;
+    private View searchFragmentView;
+    private AutoCompleteTextView searchBox;
     private PageScraper scraper = null;
     private ArrayAdapter<String> adapter2;
     private List<String> searchSuggestions = null;
@@ -52,12 +45,16 @@ public class SearchFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        activity = getActivity();
-        textView2 = (AutoCompleteTextView) activity.findViewById(R.id.searh_box);
+
+        // Get search view
+        searchFragmentView = getView();
+        assert searchFragmentView != null;
+
+        searchBox = searchFragmentView.findViewById(R.id.searh_box);;
         searchSuggestions = new ArrayList<>();
         stringSet = new HashSet<>();
-        adapter2 = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, searchSuggestions);
-        textView2.setAdapter(adapter2);
+        adapter2 = new ArrayAdapter<>(searchFragmentView, android.R.layout.simple_list_item_1, searchSuggestions);
+        searchBox.setAdapter(adapter2);
 
         final String baseURL = "http://suggestqueries.google.com/complete/search?";
 
@@ -69,11 +66,10 @@ public class SearchFragment extends Fragment {
         parameters.put("ds", "yt");
 
         final String baseURL2 = makeRequestURL(baseURL, parameters);
-        textView2.addTextChangedListener(new TextWatcher() {
+        searchBox.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
                 if (scraper != null) {
 //                    scraper.cancel(true);
-//                    textView2.clearListSelection();
                 }
                 if (!s.toString().isEmpty()) {
                     String querry = "&q=" + s.toString();
@@ -145,10 +141,6 @@ public class SearchFragment extends Fragment {
             adapter2.clear();
             adapter2.addAll(newSearchSuggestions);
             adapter2.notifyDataSetChanged();
-//            String[] countries = {"Romania", "Romania", "Romania", "Romania", "Romania"};
-//            ArrayAdapter<String> adapter22 = new ArrayAdapter<String>(activity, android.R.layout.simple_list_item_1, countries);
-//            textView2.setAdapter(adapter22);
-//            textView2.showDropDown();
         }
 
         @Override

@@ -5,7 +5,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 public class GoogleAccount {
 
     private static GoogleAccount googleAccount = null;
-    private GoogleAccountCredential mCredential;
+    private GoogleAccountCredential credential;
 
     private GoogleAccount() {
 
@@ -18,11 +18,11 @@ public class GoogleAccount {
         return googleAccount;
     }
 
-    public GoogleAccountCredential getmCredential() {
-        return mCredential;
+    public GoogleAccountCredential getCredential() {
+        return credential;
     }
 
-    public void setmCredential(GoogleAccountCredential mCredential) {
-        this.mCredential = mCredential;
+    public void setCredential(GoogleAccountCredential credential) {
+        this.credential = credential;
     }
 }
